@@ -33,10 +33,57 @@
 
 ```bash
 python3 scripts/generate_sample_data.py
+python3 run_backtest.py --config configs/daily_dual_momentum_optimized.toml
+```
+
+输出结果会写入 `outputs/daily_dual_momentum_optimized/`。
+
+仓库里仍然保留了原始基线配置，方便做对比和研究：
+
+```bash
 python3 run_backtest.py --config configs/daily_dual_momentum.toml
 ```
 
 输出结果会写入 `outputs/daily_dual_momentum/`。
+
+## 策略优化
+
+如果你想系统地搜索参数组合，而不是手动改配置，可以直接运行：
+
+```bash
+python3 run_optimization.py --config configs/daily_dual_momentum.toml
+```
+
+运行后会在 `outputs/strategy_optimization/` 下生成：
+
+- `leaderboard.csv`：所有参数组合的排名结果
+- `summary.json`：最佳参数和关键指标汇总
+- `best_config.toml`：可直接复用的最佳配置文件
+
+仓库里还额外放了一份可直接运行的样例数据优化配置，并且现在将它作为本仓库默认推荐的演示入口：
+
+- `configs/daily_dual_momentum_optimized.toml`
+
+这份配置来自默认搜索网格，并以样例数据上的 `sharpe` 作为排序目标。它适合拿来学习和对比，也比基线配置更适合直接演示，但不应被理解成真实交易中的通用最优参数。
+
+在当前样例数据上，基线配置和优化配置的表现对比如下：
+
+| 配置 | Sharpe | CAGR | 最大回撤 | 累计收益 |
+| --- | ---: | ---: | ---: | ---: |
+| `daily_dual_momentum.toml` | 0.4308 | 0.0270 | -0.1735 | 0.2471 |
+| `daily_dual_momentum_optimized.toml` | 0.7188 | 0.0459 | -0.1554 | 0.4509 |
+
+更稳妥的做法不是在全样本上硬找最优值，而是先在训练区间优化，再在测试区间验证，例如：
+
+```bash
+python3 run_optimization.py \
+  --config configs/daily_dual_momentum.toml \
+  --objective sharpe \
+  --train-end 2022-12-30 \
+  --test-start 2023-01-02
+```
+
+这样可以减少“样本内表现很好、样本外失效”的过拟合风险。
 
 ## 项目结构
 
@@ -47,7 +94,8 @@ quant-strategy/
 ├── scripts/
 ├── src/quant_strategy/
 ├── tests/
-└── run_backtest.py
+├── run_backtest.py
+└── run_optimization.py
 ```
 
 ## 运行要求

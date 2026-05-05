@@ -33,10 +33,56 @@ This exact specification is an implementation choice by this project, not a clai
 
 ```bash
 python3 scripts/generate_sample_data.py
+python3 run_backtest.py --config configs/daily_dual_momentum_optimized.toml
+```
+
+Outputs are written to `outputs/daily_dual_momentum_optimized/`.
+
+The repository still keeps the original baseline preset for comparison and
+research:
+
+```bash
 python3 run_backtest.py --config configs/daily_dual_momentum.toml
 ```
 
-Outputs are written to `outputs/daily_dual_momentum/`.
+Those outputs are written to `outputs/daily_dual_momentum/`.
+
+## Strategy Optimization
+
+You can run a basic parameter search on top of the backtest engine:
+
+```bash
+python3 run_optimization.py --config configs/daily_dual_momentum.toml
+```
+
+This writes a ranked `leaderboard.csv`, a `summary.json`, and a reusable
+`best_config.toml` to `outputs/strategy_optimization/`.
+
+The repository includes a ready-to-run sample-data optimized preset at
+`configs/daily_dual_momentum_optimized.toml`, and that is the main recommended
+demo entrypoint in this repository. It was selected from the default search
+grid using the bundled sample dataset with `sharpe` as the objective. Treat it
+as a stronger sample preset, not as a production-default claim.
+
+On the bundled sample dataset, the baseline and optimized presets compare as
+follows:
+
+| Config | Sharpe | CAGR | Max Drawdown | Total Return |
+| --- | ---: | ---: | ---: | ---: |
+| `daily_dual_momentum.toml` | 0.4308 | 0.0270 | -0.1735 | 0.2471 |
+| `daily_dual_momentum_optimized.toml` | 0.7188 | 0.0459 | -0.1554 | 0.4509 |
+
+Treat these results as research scaffolding, not production truth. The safest
+workflow is to optimize on a training window and judge the selected parameters
+on a separate test window:
+
+```bash
+python3 run_optimization.py \
+  --config configs/daily_dual_momentum.toml \
+  --objective sharpe \
+  --train-end 2022-12-30 \
+  --test-start 2023-01-02
+```
 
 ## Project Layout
 
@@ -47,7 +93,8 @@ quant-strategy/
 ├── scripts/
 ├── src/quant_strategy/
 ├── tests/
-└── run_backtest.py
+├── run_backtest.py
+└── run_optimization.py
 ```
 
 ## Data Format

@@ -1,0 +1,29 @@
+[data]
+path = "../data/sample_prices.csv"
+
+[strategy]
+lookback_days = [63, 126, 252]
+signal_weights = [0.2, 0.3, 0.5]
+top_n = 4
+trend_ma_days = 100
+absolute_momentum_lookback = 252
+rebalance_frequency = "M"
+min_history_days = 260
+
+[risk]
+vol_lookback_days = 20
+covariance_lookback_days = 60
+target_annual_vol = 0.08
+max_weight = 0.35
+max_gross = 1.00
+benchmark_ticker = "SPY"
+benchmark_trend_ma_days = 200
+cash_when_benchmark_below_trend = true
+regime_gross_multiplier = 0.75
+
+[execution]
+commission_bps = 1.0
+slippage_bps = 5.0
+
+[output]
+directory = "../outputs/daily_dual_momentum_optimized"
